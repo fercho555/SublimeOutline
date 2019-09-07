@@ -3,9 +3,27 @@ from sublime import Region
 from sublime_plugin import WindowCommand, TextCommand, EventListener
 from .show import show, refresh_sym_view, get_sidebar_views_groups, get_sidebar_status
 
+ST3 = int(sublime.version()) >= 3000
+
+if ST3:
+    from .common import first, set_proper_scheme, calc_width, get_group
+else:
+    from common import first, set_proper_scheme, calc_width, get_group
+
+
 class OutlineCommand(WindowCommand):
 	def run(self, immediate=False, single_pane=False, project=False, other_group=False, layout=0):
 		show(self.window, single_pane=single_pane, other_group=other_group, layout=layout)
+
+class OutlineStartCommand(TextCommand):
+	def run(self, edit):
+		immediate=True
+		single_pane=True
+		project=True		
+		other_group="right"
+		layout=2
+		show(self.view.window(), single_pane=single_pane, other_group=other_group, layout=layout)
+
 
 class OutlineCloseSidebarCommand(WindowCommand):
 	def run(self):
@@ -17,13 +35,15 @@ class OutlineCloseSidebarCommand(WindowCommand):
 		self.window.set_layout({"cols": [0.0, 1.0], "rows": [0.0, 1.0], "cells": [[0, 0, 1, 1]]})
 
 class OutlineRefreshCommand(TextCommand):
-	def run(self, edit, symlist=None, symkeys=None, path=None, to_expand=None, toggle=None):
+	def run(self, edit, symlist=None, symkeys=None, path=None, to_expand=None, toggle=None, active_view=None):
 		self.view.erase(edit, Region(0, self.view.size()))
 		if symlist and self.view.settings().get('outline_alphabetical'):
 			symlist, symkeys = (list(t) for t in zip(*sorted(zip(symlist, symkeys))))
 		self.view.insert(edit, 0, "\n".join(symlist))
 		self.view.settings().set('symlist', symlist)
 		self.view.settings().set('symkeys', symkeys)
+		if active_view:
+			self.view.settings().set('active_view', active_view)
 		self.view.settings().set('current_file', path)
 		self.view.sel().clear()
 
@@ -36,7 +56,7 @@ class OutlineToggleSortCommand(TextCommand):
 				sym_view = v
 
 		symlist = self.view.get_symbols()
-		refresh_sym_view(sym_view, symlist, self.view.file_name())
+		refresh_sym_view(sym_view, symlist, self.view.file_name(), self.view)
 
 class OutlineEventHandler(EventListener):
 	def on_selection_modified(self, view):
@@ -55,9 +75,16 @@ class OutlineEventHandler(EventListener):
 		(row, col) = sym_view.rowcol(sym_view.sel()[0].begin())
 
 		active_view =None
-		for group in range(window.num_groups()):
-			if group != sym_group and group != fb_group:
-				active_view = window.active_view_in_group(group)
+		active_view_id = sym_view.settings().get('active_view')
+		if active_view_id:
+			active_view = first(window.views(), lambda v: v.id() == active_view_id)
+
+		#if there is no active view set yet
+		if active_view == None:
+			for group in range(window.num_groups()):
+				if group != sym_group and group != fb_group:
+					active_view = window.active_view_in_group(group)
+
 		if active_view != None:
 			symkeys = sym_view.settings().get('symkeys')
 			if not symkeys:
@@ -89,7 +116,7 @@ class OutlineEventHandler(EventListener):
 			
 		symlist = view.get_symbols()
 
-		refresh_sym_view(sym_view, symlist, view.file_name())
+		refresh_sym_view(sym_view, symlist, view.file_name(), view)
 
 	def on_pre_save(self, view):
 		if u'𝌆' in view.name():
@@ -111,4 +138,4 @@ class OutlineEventHandler(EventListener):
 				sym_view.settings().set('current_file', view.file_name())
 			
 		symlist = view.get_symbols()
-		refresh_sym_view(sym_view, symlist, view.file_name())
+		refresh_sym_view(sym_view, symlist, view.file_name(), view)

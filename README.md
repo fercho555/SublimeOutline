@@ -2,7 +2,10 @@
 
 ### Overview
 
-Inspired by [FileBrowser](https://github.com/aziz/SublimeFileBrowser), this package shows the outline of your document or class/function name list of your code in a sidebar-style tab.
+!!! This package DO WORKS if you use a multi-column/row layout.
+
+
+Inspired by original [SublimeOutline](https://github.com/warmdev/SublimeOutline), this package shows the outline of your document or class/function name list of your code in a sidebar-style tab.
 
 ![Screenshot](screenshot.png?raw=true "Screenshot")
 
@@ -46,10 +49,6 @@ Remove `-Dark` or remove the entire line to return to the bright theme. To custo
 Outline is updated when you save a file or switch between files.
 
 Content and indentation in the `Outline` tab is controlled by the `Symbol List.tmPreferences` file (file name may differ) corresponding to the syntax of your file.
-
-### Known issue
-
-* This package may not work if you use a multi-column/row layout.
 
 ### License
 

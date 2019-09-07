@@ -120,9 +120,13 @@ def show(window, view_id=None, ignore_existing=False, single_pane=False, other_g
     
     refresh_sym_view(view, symlist, file_path)
 
-def refresh_sym_view(sym_view, symlist, path):
+def refresh_sym_view(sym_view, symlist, path, active_view=None):
     l = []
     k = []
+    active_view_id = None
+    if active_view:
+        active_view_id = active_view.id()
+
     for symbol in symlist:
         rng, sym = symbol
         l.append(sym)
@@ -130,7 +134,7 @@ def refresh_sym_view(sym_view, symlist, path):
     if sym_view != None:
         sym_view.settings().erase('symlist')
         sym_view.settings().erase('symkeys')
-        sym_view.run_command('outline_refresh', {'symlist': l, 'symkeys': k, 'path': path})
+        sym_view.run_command('outline_refresh', {'symlist': l, 'symkeys': k, 'path': path, 'active_view': active_view_id})
 
 def get_sidebar_views_groups(view):
     window = view.window()
