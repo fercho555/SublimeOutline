@@ -155,7 +155,7 @@ def set_AllowableS(self):
     A307=float(comboA307.get())
     print("Bolt Allw stress: ", A307)
 
-lab_comboA307 = tk.Label(text="Select type of Steel A307")
+lab_comboA307 = tk.Label(text="Select allowable shear stress A307")
 lab_comboA307.grid(row=4, column=1)
 textVari=tk.StringVar()
 textVari.set("Select allowable stress")
@@ -254,8 +254,6 @@ def main():
                  print ("Thickness: ",row[Thickness])
 ##             else:
 ##                   print ("Area value notfound")
-
-
 ##   Number of bolts calculation
      hanger2=hanger(A307,Load,float_angle)
      print ("Number of bolts: ",hanger1.numMaxBolt(A307,float_bolt,Load) )
@@ -269,14 +267,8 @@ def main():
 
      mixHangBear=hanger(fy_val,Load,float_angle)
      mixHangBear.bearingstress(numbOfB,val_thickplate)#0.3 plate's thickness?
-    
+
      print("Bearing stress: " ,mixHangBear.bearingstress(numbOfB,val_thickplate))
-
-
-
-
-##     strhang=gussetThickReq(hanger)
-
 
 try:
 
