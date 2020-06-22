@@ -79,8 +79,6 @@ class ClassBearing():
 
     def __init__(self,  numbOfBolts, thicknOfPlate, diamBolts):
 ##        self.fy=class_a.fy
-
-
 ##        self.angle_thick=class_a.angle_thick
         self.numbOfBolts=numbOfBolts
         self.thicknOfPlate=thicknOfPlate
@@ -89,12 +87,10 @@ class ClassBearing():
          bear= 60/(float(numbOfBolts)*float(thicknOfPlate)*foat(diamBolts))
          return bear
 
-
 def print_fy(_):
     global fy_val
     fy_val=ICustomer.get()
     print(ICustomer.get())
-
 
 root = tk.Tk()#create an instance
 ICus = tk.StringVar(root)
@@ -122,11 +118,8 @@ comboVertLoad['values']=("1","5","6","7","8","10","20","30","50","60","70","80")
 comboVertLoad.current(0) #set the select item
 comboVertLoad.grid(row=2, column=3)
 comboVertLoad.bind("<<ComboboxSelected>>", print_value)
-
-
 #Disable resizing the GUI
 #root.resizable(False,False)
-
 #=============Combobox for angles sizes================
 
 def set_angle(_):
@@ -188,7 +181,21 @@ comboBolt.grid(row=5,column=2)
 comboBolt.bind("<<ComboboxSelected>>", set_bolt)
 
 #Assign value of boltsLabel to a variable
+def set_gussetWidth (self):
+    global gussetWidth
+    gussetWidth= comboGusset.get()
 
+    print("Selected gusset plate width (inch): ", gussetWidth)
+
+lab_comboGusset = tk.Label(text="Gusset width (in) ")
+lab_comboGusset.grid(row=4, column=3)
+tittext=tk.StringVar()
+tittext.set("Select gusset plate's width (in)")
+comboGusset=ttk.Combobox(root, textvariable=tittext, state='readonly')
+comboGusset['values']=("2","3","4","5","6","7","8","9","10")
+comboGusset.grid(row=5,column=3)
+comboGusset.current(4)
+comboGusset.bind("<<ComboboxSelected>>", set_gussetWidth)
 root.mainloop()
 
 Dict = {}
@@ -249,27 +256,21 @@ def main():
 ##                   print ("Area value notfound")
 
 
-
-
-
-
 ##   Number of bolts calculation
      hanger2=hanger(A307,Load,float_angle)
      print ("Number of bolts: ",hanger1.numMaxBolt(A307,float_bolt,Load) )
-
+     #Store variable numbOfB to use subsequently in bearingstress function
      numbOfB= hanger1.numMaxBolt(A307,float_bolt,Load)
-     # Thickness of plate calculation
-     hanger2.thickplate(9)
-     print("Gusset plate thickness ",hanger2.thickplate(9))
-     val_thickplate=hanger2.thickplate(9.0)
-     print("Plate's thick(in): " ,val_thickplate)
+     # Thickness of plate calculation. First, new width should be entered
+     hanger2.thickplate(gussetWidth)
+
+     val_thickplate=hanger2.thickplate(gussetWidth)
+     print("Gusset plate's thickness (in): " ,val_thickplate)
 
      mixHangBear=hanger(fy_val,Load,float_angle)
-     mixHangBear.bearingstress(numbOfB,0.3)
-     diamBolts = strhang.fy
-     diamBolts=float_bolt
-     print("Bolt diamet (in): " ,diamBolts)
-     print("Bearing stress: " ,mixHangBear.bearingstress(diamBolts,val_thickplate))
+     mixHangBear.bearingstress(numbOfB,val_thickplate)#0.3 plate's thickness?
+    
+     print("Bearing stress: " ,mixHangBear.bearingstress(numbOfB,val_thickplate))
 
 
 
