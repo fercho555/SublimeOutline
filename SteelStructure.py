@@ -7,6 +7,8 @@ import os
 import pdb
 from decimal import Decimal, ROUND_HALF_EVEN
 import math
+import mysql.connector
+
 #Add a class
 class hanger():
     numb_bolts=1
@@ -198,6 +200,27 @@ comboGusset.current(4)
 comboGusset.bind("<<ComboboxSelected>>", set_gussetWidth)
 root.mainloop()
 
+mydb = mysql.connector.connect(
+    host = "localhost",
+    user = "root",
+    password = "password",
+    database= "csv_db"
+)
+
+mycursor = mydb.cursor()
+
+# sql = "SELECT adiam_all.id AS diamet, \
+# diam5_8.id AS d5_8 \
+# FROM adiam_all AS a \
+# INNER JOIN diam5_8 ON d5_8.id = a.id"
+mycursor.execute("SHOW DATABASES")
+# mycursor.execute(sql)
+
+# myresult = mycursor.fetchall()
+
+for x in mycursor:
+    print(x)
+
 Dict = {}
 Dict={'Dict1':{'Depth': '12'},
        'DictThickness':{'Thickness':1.375},
@@ -220,12 +243,15 @@ def main():
      totalAreaReqd= round(crossSectByLoad + crossSectRemovedByBolts,1)
      print('Total area required for structural angle in²: ', totalAreaReqd)
      totalReqArea_1=round(totalAreaReqd +0.1,1)
+
+
        #Chercher dans l'arrays taille de structure adequate
      with open("C:\\Users\\MOSES\\Documents\\POSTSAPPLIED.csv","r") as f:
          reader = csv.DictReader(f)
          #reader=csv.reader(f)
          Size,Depth,Thickness,Sectional_Area,Weight, Moment_of_Inertia \
                                                      =reader.fieldnames
+
 ##         reader=[[row[0],eval(row[1]),eval(row[2]),eval(row[3]),eval(row[4]),
 ##                  eval(row[5])]  for row in reader]
          #pdb.set_trace()
