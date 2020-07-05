@@ -100,7 +100,8 @@ ICus.set("Select fy kips")
 ICustomer = ttk.Combobox( textvariable = ICus, state = 'readonly')
 ICustomer['values'] = ("36", "40", "50", "60")
 ICustomer.grid(row = 2, column = 2)
-label_ICustVar = tk.Label( textvariable= ICus)
+#ICustomer.current(0)
+label_ICustVar = tk.Label( text="Select fy (kips)")#textvariable= ICus
 label_ICustVar.grid(row = 1, column = 2)
 
 ICustomer.bind("<<ComboboxSelected>>", print_fy)
@@ -117,7 +118,7 @@ label_comboVertLoad.grid(row=1,column=3)
 combotext= tk.StringVar()
 comboVertLoad=ttk.Combobox(root, textvariable=combotext,state='readonly')
 comboVertLoad['values']=("1","5","6","7","8","10","20","30","50","60","70","80")
-comboVertLoad.current(0) #set the select item
+comboVertLoad.current(3) #set the select item
 comboVertLoad.grid(row=2, column=3)
 comboVertLoad.bind("<<ComboboxSelected>>", print_value)
 #Disable resizing the GUI
@@ -179,6 +180,7 @@ tittext=tk.StringVar()
 tittext.set("Select bolt's diameter (in)")
 comboBolt=ttk.Combobox(root, textvariable=tittext, state='readonly')
 comboBolt['values']=("5/16","3/8","7/16","1/2","9/16","5/8","3/4","7/8","1")
+comboBolt.current(0)
 comboBolt.grid(row=5,column=2)
 comboBolt.bind("<<ComboboxSelected>>", set_bolt)
 
@@ -204,22 +206,47 @@ mydb = mysql.connector.connect(
     host = "localhost",
     user = "root",
     password = "password",
-    database= "csv_db"
+    database= "dbShears"
 )
-
+# diam_all.diam AS diam, \
+# diam5_8.asd AS shear \
 mycursor = mydb.cursor()
+#mycursor=mydb.cursor(MySQLdb.cursors.DictCursor)
+mycursor=mydb.cursor(dictionary=True)
+# sql = "SELECT  * \
+# FROM diam_all \
+# INNER JOIN diam5_8 ON diam_all.id =diam5_8.id"
+#mycursor.execute("SHOW DATABASES")
+# Q0 ="ALTER TABLE diam7_8 ADD PRIMARY KEY(id)"
+# mycursor.execute(Q0)
+Q1=" AlTER TABLE diam5_8 ADD  FOREIGN KEY(id) REFERENCES diam_all(id)"
+Q2="ALTER TABLE diam3_4 ADD FOREIGN KEY(id) REFERENCES diam_all(id)"
+#mycursor.execute(Q2)
+sql= "SELECT \
+diam_all.id AS idAll,\
+diam5_8.asd AS asd58 \
+FROM diam_all \
+INNER JOIN diam5_8 \
+ON diam_all.id = diam5_8.id"
+#, d3.asd
+statement= "SELECT d.id, d5.asd , d5.id ,d.astm \
+FROM diam_all  d \
+INNER JOIN diam5_8  d5 \
+ON d.id = d5.id "\
+#INNER JOIN diam3_4 AS d3 "
+#ON d.id=d3.diam"
 
-# sql = "SELECT adiam_all.id AS diamet, \
-# diam5_8.id AS d5_8 \
-# FROM adiam_all AS a \
-# INNER JOIN diam5_8 ON d5_8.id = a.id"
-mycursor.execute("SHOW DATABASES")
-# mycursor.execute(sql)
+# INNER JOIN diam3_4 \
+# ON diam3_4.diam = diam_all.diam
+mycursor.execute(statement)
 
-# myresult = mycursor.fetchall()
-
-for x in mycursor:
-    print(x)
+myresult = mycursor.fetchall()
+print("ASD shear values extracted:")
+for row in myresult:
+    # print(" *{asd}, correspond to {id} ".format(asd=row['asd58'],\
+    # id=row['idAll']))
+    print(" *{asd}, correspond to {id} and {astm} ".format(asd=row['asd'],\
+    id=row['id'], astm=row['astm']))
 
 Dict = {}
 Dict={'Dict1':{'Depth': '12'},
@@ -229,6 +256,23 @@ Dict={'Dict1':{'Depth': '12'},
 ##print(Dict.get('DictThickness'))
 ##print("\nDictionary with angles properties")
 ##print(Dict)
+mycursor.execute("DROP TABLE IF EXISTS bolts")
+Q3='''
+CREATE TABLE bolts (diam VARCHAR(6), area DECIMAL(7,4), grade2 DECIMAL(7,2),
+A397 DECIMAL(7,2),A325 DECIMAL(7,2),Gr8A490 DECIMAL(7,2)
+)'''
+mycursor.execute(Q3)
+
+bolts=[("'1/4'","0.04908","2179.2","1766.9","3533.8","4417.2"),
+("'5/16'","0.07669","3405.0","2760.8","5521.7","6902.1"),
+("'3/8'","0.11044","4903.5","3975.8","7951.7","9939.6")]
+
+Q4="INSERT INTO bolts(diam, area, grade2, A397, A325,Gr8A490) VALUES (%s, %s, %s, %s, %s, %s)"
+for x, bolt in enumerate(bolts):
+    mycursor.execute(Q4, bolt)
+for x in mycursor:
+    print(x)
+mydb.commit()
 
 def main():
      global soughtArea
@@ -295,6 +339,8 @@ def main():
      mixHangBear.bearingstress(numbOfB,val_thickplate)#0.3 plate's thickness?
 
      print("Bearing stress: " ,mixHangBear.bearingstress(numbOfB,val_thickplate))
+     # With A325 bolts, thread not excluded from the shear planes the allowable
+     # stress is sought
 
 try:
 
